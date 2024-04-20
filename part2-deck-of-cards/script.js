@@ -1,26 +1,50 @@
-// Part 2: Deck of Cards
+document.addEventListener('DOMContentLoaded', async () => {
+    const drawCardBtn = document.getElementById('draw-card-btn');
+    const resetDeckBtn = document.getElementById('reset-deck-btn');
+    const cardsDiv = document.getElementById('cards');
 
-// 1. Make a request to the Deck of Cards API to request a single card from a newly shuffled deck.
-fetch('https://deckofcardsapi.com/api/deck/new/draw/')
-  .then(response => response.json())
-  .then(data => {
-    const card = `${data.cards[0].value} of ${data.cards[0].suit}`;
-    document.getElementById('card-data').textContent = card;
-  })
-  .catch(error => console.error('Error fetching data:', error));
+    let deckId;
 
-// 2. Make a request to the deck of cards API to request a single card from a newly shuffled deck,
-// then get one more card from the same deck.
-fetch('https://deckofcardsapi.com/api/deck/new/draw/')
-  .then(response => response.json())
-  .then(data => {
-    const deckId = data.deck_id;
-    return fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/`);
-  })
-  .then(response => response.json())
-  .then(data => {
-    const firstCard = `${data.cards[0].value} of ${data.cards[0].suit}`;
-    const secondCard = `${data.cards[1].value} of ${data.cards[1].suit}`;
-    document.getElementById('card-data').textContent = `First card: ${firstCard}, Second card: ${secondCard}`;
-  })
-  .catch(error => console.error('Error fetching data:', error));
+    drawCardBtn.addEventListener('click', async () => {
+        try {
+            if (!deckId) {
+                deckId = await createDeck();
+            }
+            const cardData = await drawCard(deckId);
+            displayCard(cardData);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    resetDeckBtn.addEventListener('click', () => {
+        resetDeck();
+    });
+
+    async function createDeck() {
+        const response = await fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1');
+        const data = await response.json();
+        return data.deck_id;
+    }
+
+    async function drawCard(deckId) {
+        const response = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`);
+        const data = await response.json();
+        return data.cards[0];
+    }
+
+    function displayCard(cardData) {
+        const cardDiv = document.createElement('div');
+        cardDiv.classList.add('card');
+        cardDiv.innerHTML = `
+            <span class="card-value">${cardData.value}</span>
+            <span class="card-suit">${cardData.suit}</span>
+        `;
+        cardsDiv.appendChild(cardDiv);
+    }
+
+    function resetDeck() {
+        deckId = undefined;
+        cardsDiv.innerHTML = '';
+    }
+});
