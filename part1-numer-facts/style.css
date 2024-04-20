@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    text-align: center;
+}
+
+#single-number-fact,
+#multiple-number-facts,
+#favorite-number-facts {
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+#multiple-facts,
+#favorite-facts {
+    list-style-type: none;
+    padding: 0;
+}
+
+#multiple-facts li,
+#favorite-facts li {
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+#multiple-facts h2,
+#favorite-facts h2 {
+    margin-top: 20px;
+}
