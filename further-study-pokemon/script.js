@@ -1,6 +1,3 @@
-// Part 3: Start with code from step 2
-
-// Part 4: BONUS - UI for random Pokemon generator
 const pokemonContainer = document.getElementById('pokemon-container');
 const generateBtn = document.getElementById('generate-btn');
 
