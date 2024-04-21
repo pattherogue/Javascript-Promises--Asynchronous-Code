@@ -1,44 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = document.getElementById('submit-btn');
-    submitBtn.addEventListener('click', async () => {
+    submitBtn.addEventListener('click', () => {
         const favoriteNumber = document.getElementById('favorite-number').value;
         if (!favoriteNumber) {
             alert('Please enter a number.');
             return;
         }
 
-        try {
-            const favoriteNumberFact = await getNumberFact(favoriteNumber);
+        const getFavoriteNumberFact = getNumberFact(favoriteNumber);
+
+        getFavoriteNumberFact.then(favoriteNumberFact => {
             displayFact(favoriteNumberFact);
 
-            const numberFacts = await Promise.all([
+            const numberFactsPromises = [
                 getNumberFact(42),
                 getNumberFact(100),
                 getNumberFact(2022)
-            ]);
-            displayFacts(numberFacts);
+            ].map(getNumberFact);
 
-            const favoriteNumberFacts = await getUniqueNumberFacts(favoriteNumber);
-            displayFacts(favoriteNumberFacts, true);
-        } catch (error) {
-            console.error('Error:', error);
-        }
+            Promise.all(numberFactsPromises)
+                .then(numberFacts => displayFacts(numberFacts))
+                .catch(error => console.error('Error:', error));
+
+            getUniqueNumberFacts(favoriteNumber)
+                .then(favoriteNumberFacts => displayFacts(favoriteNumberFacts, true))
+                .catch(error => console.error('Error:', error));
+        }).catch(error => console.error('Error:', error));
     });
 });
 
-async function getNumberFact(number) {
-    const response = await fetch(`http://numbersapi.com/${number}?json`);
-    const data = await response.json();
-    return data.text;
+function getNumberFact(number) {
+    return new Promise((resolve, reject) => {
+        fetch(`http://numbersapi.com/${number}?json`)
+            .then(response => response.json())
+            .then(data => resolve(data.text))
+            .catch(error => reject(error));
+    });
 }
 
-async function getUniqueNumberFacts(number) {
-    const uniqueFacts = new Set();
-    while (uniqueFacts.size < 4) {
-        const fact = await getNumberFact(number);
-        uniqueFacts.add(fact);
-    }
-    return Array.from(uniqueFacts);
+function getUniqueNumberFacts(number) {
+    return new Promise((resolve, reject) => {
+        const uniqueFacts = new Set();
+        const fetchFacts = async () => {
+            while (uniqueFacts.size < 4) {
+                try {
+                    const fact = await getNumberFact(number);
+                    uniqueFacts.add(fact);
+                } catch (error) {
+                    reject(error);
+                }
+            }
+            resolve(Array.from(uniqueFacts));
+        };
+        fetchFacts();
+    });
 }
 
 function displayFact(fact) {

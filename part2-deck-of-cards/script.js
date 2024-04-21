@@ -1,19 +1,23 @@
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const drawCardBtn = document.getElementById('draw-card-btn');
     const resetDeckBtn = document.getElementById('reset-deck-btn');
     const cardsDiv = document.getElementById('cards');
 
     let deckId;
 
-    drawCardBtn.addEventListener('click', async () => {
-        try {
-            if (!deckId) {
-                deckId = await createDeck();
-            }
-            const cardData = await drawCard(deckId);
-            displayCard(cardData);
-        } catch (error) {
-            console.error('Error:', error);
+    drawCardBtn.addEventListener('click', () => {
+        if (!deckId) {
+            createDeck()
+                .then(newDeckId => {
+                    deckId = newDeckId;
+                    return drawCard(deckId);
+                })
+                .then(cardData => displayCard(cardData))
+                .catch(error => console.error('Error:', error));
+        } else {
+            drawCard(deckId)
+                .then(cardData => displayCard(cardData))
+                .catch(error => console.error('Error:', error));
         }
     });
 
@@ -21,16 +25,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         resetDeck();
     });
 
-    async function createDeck() {
-        const response = await fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1');
-        const data = await response.json();
-        return data.deck_id;
+    function createDeck() {
+        return fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
+            .then(response => response.json())
+            .then(data => data.deck_id);
     }
 
-    async function drawCard(deckId) {
-        const response = await fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`);
-        const data = await response.json();
-        return data.cards[0];
+    function drawCard(deckId) {
+        return fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
+            .then(response => response.json())
+            .then(data => data.cards[0]);
     }
 
     function displayCard(cardData) {
